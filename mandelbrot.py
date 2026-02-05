@@ -34,13 +34,28 @@ def compute_mandelbrot_grid(xmin, xmax, ymin, ymax, width, height, max_iter):
 
     return counts
 
+
+
+
 if __name__ == "__main__":
     print(mandelbrot_point(0))
 
     start = time.time()
     result = compute_mandelbrot_grid(-2, 1, -1.5, 1.5, 1024, 1024, 100)
     elapsed = time.time() - start
+
+    print(result.shape)
     print(f"Computation took {elapsed:.3f} seconds")
+
+    #plot
+    plt.imshow(result, cmap="hot", origin="lower")
+    plt.colorbar(label="Iteration count")
+    plt.title("Mandelbrot Set (naive)")
+    plt.savefig("mandelbrot_naive.png")
+    plt.show() 
+
+
+
 
 
 

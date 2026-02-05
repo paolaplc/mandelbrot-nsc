@@ -6,6 +6,7 @@ Course: Numerical Scientific Computing 2026
 
 import numpy as np
 import matplotlib.pyplot as plt
+import time
 
 def mandelbrot_point(c, max_iter=100):
     z = 0
@@ -35,6 +36,12 @@ def compute_mandelbrot_grid(xmin, xmax, ymin, ymax, width, height, max_iter):
 
 if __name__ == "__main__":
     print(mandelbrot_point(0))
-    grid = compute_mandelbrot_grid(-2, 1, -1.5, 1.5, 100, 100, 100)
-    print(grid.shape)
+
+    start = time.time()
+    result = compute_mandelbrot_grid(-2, 1, -1.5, 1.5, 1024, 1024, 100)
+    elapsed = time.time() - start
+    print(f"Computation took {elapsed:.3f} seconds")
+
+
+
 

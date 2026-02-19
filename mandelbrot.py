@@ -7,7 +7,6 @@ Course: Numerical Scientific Computing 2026
 import numpy as np
 import matplotlib.pyplot as plt
 import time
-import time
 import statistics
 
 
@@ -39,9 +38,11 @@ def benchmark(func, *args, n_runs=3):
     return median_t, result
 
 
-#Naive lesson 1 
+# -----------------------------------
+
+#Naive approach  lesson 1 
 def mandelbrot_point(c, max_iter=100):
-    z = 0
+    z = 0j
     for n in range(max_iter):
         z = z*z + c
         if abs(z) > 2:
@@ -66,13 +67,28 @@ def compute_mandelbrot_grid(xmin, xmax, ymin, ymax, width, height, max_iter):
 
     return counts
 
+# ---------------------------------
+#Lesson2 milestone 2: vectorize 
+def compute_mandelbrot_vectorized(xmin, xmax, ymin, ymax, n, max_iter):
+    C = create_complex_grid(xmin, xmax, ymin, ymax, n)
+
+    Z = np.zeros_like(C)              
+    M = np.zeros(C.shape, dtype=int)  
+
+    for _ in range(max_iter):        
+        mask = np.abs(Z) <= 2
+        Z[mask] = Z[mask]**2 + C[mask]
+        M[mask] += 1
+
+    return M
+
 
 
 # -------------------------
 # Main
 # -------------------------
 if __name__ == "__main__":
-    # Milestone 1
+    #lesson2 milestone 1
     C = create_complex_grid(-2, 1, -1.5, 1.5, 1024)
     print(f"Shape: {C.shape}")
     print(f"Type:  {C.dtype}")
@@ -90,11 +106,27 @@ if __name__ == "__main__":
 
     print("Result shape:", result.shape)
 
+    print("\nVectorized:")
+    t_vec, result_vec = benchmark(compute_mandelbrot_vectorized, -2, 1, -1.5, 1.5, 1024, 100, n_runs=3)
+    print(result_vec.shape)
+
+  # Validate (slide version)
+    if np.allclose(result, result_vec):
+        print("Results match!")
+    else:
+        print("Results differ!")
+
+    diff = np.abs(result - result_vec)
+    print(f"Max difference: {diff.max()}")
+    print(f"Different pixels: {(diff > 0).sum()}")
+
+    print(f"Speedup: {t_med / t_vec:.2f}x")
+
     # plot 
-    plt.imshow(result, cmap="hot", origin="lower")
+    plt.imshow(result_vec, cmap="hot", origin="lower")
     plt.colorbar(label="Iteration count")
-    plt.title(f"Mandelbrot Set (naive) median={t_med:.3f}s")
-    plt.savefig("mandelbrot_naive.png", dpi=150)
+    plt.title(f"Mandelbrot Set (vectorized) median={t_vec:.3f}s")
+    plt.savefig("mandelbrot_vectorized.png", dpi=150)
     plt.show()
 
 

@@ -7,7 +7,39 @@ Course: Numerical Scientific Computing 2026
 import numpy as np
 import matplotlib.pyplot as plt
 import time
+import time
+import statistics
 
+
+#lesson2 milestone 1
+def create_complex_grid(xmin, xmax, ymin, ymax, n):
+    x = np.linspace(xmin, xmax, n)
+    y = np.linspace(ymin, ymax, n)
+    X, Y = np.meshgrid(x, y)
+    C = X + 1j * Y
+    return C
+
+
+
+#lesson2 benchmark 
+def benchmark(func, *args, n_runs=3):
+    """Time func, return median of n_runs."""
+    times = []
+    result = None
+    for _ in range(n_runs):
+        t0 = time.perf_counter()
+        result = func(*args)
+        times.append(time.perf_counter() - t0)
+
+    median_t = statistics.median(times)
+    print(
+        f"Median: {median_t:.4f}s "
+        f"(min={min(times):.4f}, max={max(times):.4f})"
+    )
+    return median_t, result
+
+
+#Naive lesson 1 
 def mandelbrot_point(c, max_iter=100):
     z = 0
     for n in range(max_iter):
@@ -36,25 +68,34 @@ def compute_mandelbrot_grid(xmin, xmax, ymin, ymax, width, height, max_iter):
 
 
 
-
+# -------------------------
+# Main
+# -------------------------
 if __name__ == "__main__":
-    print(mandelbrot_point(0))
+    # Milestone 1
+    C = create_complex_grid(-2, 1, -1.5, 1.5, 1024)
+    print(f"Shape: {C.shape}")
+    print(f"Type:  {C.dtype}")
 
-    start = time.time()
-    result = compute_mandelbrot_grid(-2, 1, -1.5, 1.5, 1024, 1024, 100)
-    elapsed = time.time() - start
+    # sanity check
+    print("mandelbrot_point(0) =", mandelbrot_point(0))
 
-    print(result.shape)
-    print(f"Computation took {elapsed:.3f} seconds")
+    # benchmark naive baseline (>=3 runs, perf_counter)
+    t_med, result = benchmark(
+        compute_mandelbrot_grid,
+        -2, 1, -1.5, 1.5,
+        1024, 1024, 100,
+        n_runs=3
+    )
 
-    #plot
+    print("Result shape:", result.shape)
+
+    # plot 
     plt.imshow(result, cmap="hot", origin="lower")
     plt.colorbar(label="Iteration count")
-    plt.title("Mandelbrot Set (naive)")
-    plt.savefig("mandelbrot_naive.png")
-    plt.show() 
-
-
+    plt.title(f"Mandelbrot Set (naive) median={t_med:.3f}s")
+    plt.savefig("mandelbrot_naive.png", dpi=150)
+    plt.show()
 
 
 

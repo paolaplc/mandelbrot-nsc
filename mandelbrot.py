@@ -42,11 +42,11 @@ def benchmark(func, *args, n_runs=3):
 
 #Naive approach  lesson 1 
 def mandelbrot_point(c, max_iter=100):
-    z = 0j
+    z = 0
     for n in range(max_iter):
-        z = z*z + c
         if abs(z) > 2:
             return n
+        z = z*z + c
     return max_iter
 
 
@@ -83,11 +83,29 @@ def compute_mandelbrot_vectorized(xmin, xmax, ymin, ymax, n, max_iter):
     return M
 
 
+#milestone3 : memory access patterns 
+def row_sum(A):
+    N = A.shape[0]
+    s = 0.0
+    for i in range(N):
+        s += np.sum(A[i, :])
+    return s
+
+def col_sum(A):
+    N = A.shape[1]
+    s = 0.0
+    for j in range(N):
+        s += np.sum(A[:, j])
+    return s
+
+
+
 
 # -------------------------
 # Main
 # -------------------------
 if __name__ == "__main__":
+    print("RUNNING mandelbrot.py")
     #lesson2 milestone 1
     C = create_complex_grid(-2, 1, -1.5, 1.5, 1024)
     print(f"Shape: {C.shape}")
@@ -110,7 +128,7 @@ if __name__ == "__main__":
     t_vec, result_vec = benchmark(compute_mandelbrot_vectorized, -2, 1, -1.5, 1.5, 1024, 100, n_runs=3)
     print(result_vec.shape)
 
-  # Validate (slide version)
+    # Validate (slide version)
     if np.allclose(result, result_vec):
         print("Results match!")
     else:
@@ -128,6 +146,34 @@ if __name__ == "__main__":
     plt.title(f"Mandelbrot Set (vectorized) median={t_vec:.3f}s")
     plt.savefig("mandelbrot_vectorized.png", dpi=150)
     plt.show()
+
+    plt.imshow(result, cmap="hot", origin="lower")
+    plt.colorbar(label="Iteration count")
+    plt.title(f"Mandelbrot Set (naive) median={t_med:.3f}s")
+    plt.savefig("mandelbrot_naive.png", dpi=150)
+    plt.show()
+
+        
+    #milestone3 memory access patterns
+    N = 10000
+    A = np.random.rand(N, N)
+
+    print("C-order:", A.flags["C_CONTIGUOUS"], "F-order:", A.flags["F_CONTIGUOUS"])
+
+    t_row, _ = benchmark(row_sum, A, n_runs=3)
+    t_col, _ = benchmark(col_sum, A, n_runs=3)
+
+    print("C-order times -> row:", t_row, "col:", t_col)
+
+    A_f = np.asfortranarray(A)
+    print("C-order:", A_f.flags["C_CONTIGUOUS"], "F-order:", A_f.flags["F_CONTIGUOUS"])
+
+    t_row_f, _ = benchmark(row_sum, A_f, n_runs=3)
+    t_col_f, _ = benchmark(col_sum, A_f, n_runs=3)
+
+    print("F-order times -> row:", t_row_f, "col:", t_col_f)
+
+
 
 
 

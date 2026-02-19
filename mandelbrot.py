@@ -40,7 +40,7 @@ def benchmark(func, *args, n_runs=3):
 
 # -----------------------------------
 
-#Naive approach  lesson 1 
+#l1: Naive approach  lesson 1 
 def mandelbrot_point(c, max_iter=100):
     z = 0
     for n in range(max_iter):
@@ -83,7 +83,7 @@ def compute_mandelbrot_vectorized(xmin, xmax, ymin, ymax, n, max_iter):
     return M
 
 
-#milestone3 : memory access patterns 
+#l2:milestone3 : memory access patterns 
 def row_sum(A):
     N = A.shape[0]
     s = 0.0
@@ -97,6 +97,8 @@ def col_sum(A):
     for j in range(N):
         s += np.sum(A[:, j])
     return s
+
+
 
 
 
@@ -172,6 +174,38 @@ if __name__ == "__main__":
     t_col_f, _ = benchmark(col_sum, A_f, n_runs=3)
 
     print("F-order times -> row:", t_row_f, "col:", t_col_f)
+
+    #l2:molestone4: Scaling 
+
+sizes = [256, 512, 1024, 2048, 4096]
+runtimes = []
+
+for n in sizes:
+    t_n, _ = benchmark(
+        compute_mandelbrot_vectorized,
+        -2, 1, -1.5, 1.5,
+        n, 100,
+        n_runs=3
+    )
+    runtimes.append(t_n)
+
+# Plot: grid size vs runtime
+plt.figure()
+plt.plot(sizes, runtimes, marker="o")
+plt.xlabel("Grid size n (n×n)")
+plt.ylabel("Runtime (median seconds)")
+plt.title("Vectorized Mandelbrot: runtime vs grid size")
+plt.grid(True)
+plt.show()
+
+# Predicting 2048^2 from 1024^2
+X = runtimes[sizes.index(1024)]
+pred_2048 = 4 * X
+meas_2048 = runtimes[sizes.index(2048)]
+print(f"Prediction: if 1024x1024 takes X={X:.4f}s, then 2048x2048 ~ 4X = {pred_2048:.4f}s")
+print(f"Measured 2048x2048: {meas_2048:.4f}s   Ratio(measured/pred)={meas_2048/pred_2048:.3f}")
+
+
 
 
 

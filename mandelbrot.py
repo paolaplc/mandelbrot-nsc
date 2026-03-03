@@ -19,7 +19,6 @@ def create_complex_grid(xmin, xmax, ymin, ymax, n):
     return C
 
 
-
 #lesson2 benchmark 
 def benchmark(func, *args, n_runs=3):
     """Time func, return median of n_runs."""
@@ -67,13 +66,14 @@ def compute_mandelbrot_grid(xmin, xmax, ymin, ymax, width, height, max_iter):
 
     return counts
 
+
 # ---------------------------------
 #Lesson2 milestone 2: vectorize 
 def compute_mandelbrot_vectorized(xmin, xmax, ymin, ymax, n, max_iter):
     C = create_complex_grid(xmin, xmax, ymin, ymax, n)
 
     Z = np.zeros_like(C)              
-    M = np.zeros(C.shape, dtype=int)  
+    M = np.zeros(C.shape, dtype=np.int32)  
 
     for _ in range(max_iter):        
         mask = np.abs(Z) <= 2
@@ -81,7 +81,6 @@ def compute_mandelbrot_vectorized(xmin, xmax, ymin, ymax, n, max_iter):
         M[mask] += 1
 
     return M
-
 
 #l2:milestone3 : memory access patterns 
 def row_sum(A):
@@ -97,8 +96,6 @@ def col_sum(A):
     for j in range(N):
         s += np.sum(A[:, j])
     return s
-
-
 
 
 
@@ -130,7 +127,7 @@ if __name__ == "__main__":
     t_vec, result_vec = benchmark(compute_mandelbrot_vectorized, -2, 1, -1.5, 1.5, 1024, 100, n_runs=3)
     print(result_vec.shape)
 
-    # Validate (slide version)
+    # validating (slide version)
     if np.allclose(result, result_vec):
         print("Results match!")
     else:
@@ -189,7 +186,7 @@ for n in sizes:
     )
     runtimes.append(t_n)
 
-# Plot: grid size vs runtime
+# plot: grid size vs runtime
 plt.figure()
 plt.plot(sizes, runtimes, marker="o")
 plt.xlabel("Grid size n (n×n)")
@@ -198,7 +195,7 @@ plt.title("Vectorized Mandelbrot: runtime vs grid size")
 plt.grid(True)
 plt.show()
 
-# Predicting 2048^2 from 1024^2
+#predicting 2048^2 from 1024^2
 X = runtimes[sizes.index(1024)]
 pred_2048 = 4 * X
 meas_2048 = runtimes[sizes.index(2048)]

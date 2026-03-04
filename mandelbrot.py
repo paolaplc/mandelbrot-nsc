@@ -8,6 +8,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 import time
 import statistics
+import cProfile
+import pstats
 
 
 #lesson2 milestone 1
@@ -35,6 +37,24 @@ def benchmark(func, *args, n_runs=3):
         f"(min={min(times):.4f}, max={max(times):.4f})"
     )
     return median_t, result
+
+
+#lesson 3 milestone 1 profile fuction 
+def profile_function(callable_fn, prof_filename, top_n=10):
+
+    cProfile.runctx(
+        "callable_fn()",
+        globals(),
+        {"callable_fn": callable_fn},
+        prof_filename
+    )
+    stats = pstats.Stats(prof_filename)
+    stats.sort_stats("cumulative")
+    stats.print_stats(top_n)
+
+
+
+
 
 
 # -----------------------------------
@@ -112,6 +132,22 @@ if __name__ == "__main__":
 
     # sanity check
     print("mandelbrot_point(0) =", mandelbrot_point(0))
+
+    #lessin 3 milestone 1 calling profiling 
+    print("\n--- cProfile: Naive 512x512 ---")
+    profile_function(
+        lambda: compute_mandelbrot_grid(-2, 1, -1.5, 1.5, 512, 512, 100),
+        "naive_profile.prof",
+        top_n=10
+    )
+
+    print("\n--- cProfile: Vectorized NumPy 512x512 ---")
+    profile_function(
+        lambda: compute_mandelbrot_vectorized(-2, 1, -1.5, 1.5, 512, 100),
+        "numpy_profile.prof",
+        top_n=10
+    )
+
 
     # benchmark naive baseline (>=3 runs, perf_counter)
     t_med, result = benchmark(

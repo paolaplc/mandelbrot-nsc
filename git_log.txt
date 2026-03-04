@@ -1,0 +1,104 @@
+2026-03-04 03b9a77 Data type optimization float32 vs float 64 : almost the same on this hardware
+
+ __pycache__/mandelbrot.cpython-311.pyc | Bin 12888 -> 8100 bytes
+ analysis.py                            | 160 +++++++++++++++++++++++
+ benchmark_numba.py                     |  79 ++++++++----
+ mandelbrot.py                          | 226 +++++++++------------------------
+ precision_comparison_f32_f64.png       | Bin 0 -> 148184 bytes
+ 5 files changed, 276 insertions(+), 189 deletions(-)
+2026-03-04 992eb18 Performance Tracker Naive, Numpy and Numba: Numba beats NumPy  because the Mandelbrot iteration works in loops
+
+ __pycache__/mandelbrot.cpython-311.pyc | Bin 10044 -> 12888 bytes
+ benchmark_numba.py                     |  74 ++++++++++++++++++
+ mandelbrot.py                          | 132 ++++++++++++++++++++++++---------
+ mandelbrot_numba.png                   | Bin 0 -> 106310 bytes
+ mandelbrot_vectorized.png              | Bin 106648 -> 106438 bytes
+ naive_profile.prof                     | Bin 2747 -> 2747 bytes
+ numpy_profile.prof                     | Bin 5622 -> 5622 bytes
+ profile_naive.py                       |   2 +-
+ 8 files changed, 173 insertions(+), 35 deletions(-)
+2026-03-04 eb24c71 line profiler on naive
+
+ __pycache__/mandelbrot.cpython-311.pyc | Bin 745 -> 10044 bytes
+ mandelbrot.py                          |   5 +++++
+ profile_naive.py                       |  18 ++++++++++++++++++
+ profile_naive.py.lprof                 | Bin 0 -> 336 bytes
+ 4 files changed, 23 insertions(+)
+2026-03-04 961f645 Function Level Profiling to check where is the bottlenecks per implementation
+
+ mandelbrot.py             |  36 ++++++++++++++++++++++++++++++++++++
+ mandelbrot_naive.png      | Bin 105079 -> 105013 bytes
+ mandelbrot_vectorized.png | Bin 106759 -> 106648 bytes
+ naive_profile.prof        | Bin 0 -> 2747 bytes
+ numpy_profile.prof        | Bin 0 -> 5622 bytes
+ 5 files changed, 36 insertions(+)
+2026-03-03 cce8ff4 size scaling
+
+ mandelbrot.py             |  13 +++++--------
+ mandelbrot_naive.png      | Bin 104882 -> 105079 bytes
+ mandelbrot_vectorized.png | Bin 106310 -> 106759 bytes
+ 3 files changed, 5 insertions(+), 8 deletions(-)
+2026-03-03 4e40fc9 Size Scaling: scaling gets linear in number of pixels. No dramatic knee up to 2048 now
+
+ mandelbrot_naive.png      | Bin 104863 -> 104882 bytes
+ mandelbrot_vectorized.png | Bin 106566 -> 106310 bytes
+ 2 files changed, 0 insertions(+), 0 deletions(-)
+2026-02-19 5025c8d Size Scaling
+
+ mandelbrot.py | 38 ++++++++++++++++++++++++++++++++++++--
+ 1 file changed, 36 insertions(+), 2 deletions(-)
+2026-02-19 1afd22d add memory access patterns
+
+ mandelbrot.py             |  52 +++++++++++++++++++++++++++++++++++++++++++---
+ mandelbrot_naive.png      | Bin 105460 -> 104863 bytes
+ mandelbrot_vectorized.png | Bin 106486 -> 106566 bytes
+ 3 files changed, 49 insertions(+), 3 deletions(-)
+2026-02-19 9835cc7 vectorized Mandelbrot and validation
+
+ mandelbrot.py             |  46 +++++++++++++++++++++++++++++++++++++++-------
+ mandelbrot_vectorized.png | Bin 0 -> 106486 bytes
+ 2 files changed, 39 insertions(+), 7 deletions(-)
+2026-02-19 7b3c5f2 l2: m1:create complex grid C
+
+ mandelbrot.py        |  67 +++++++++++++++++++++++++++++++++++++++++----------
+ mandelbrot_naive.png | Bin 58184 -> 105460 bytes
+ 2 files changed, 54 insertions(+), 13 deletions(-)
+2026-02-19 8dc306c add gitignore
+
+ .gitignore | 5 +++++
+ 1 file changed, 5 insertions(+)
+2026-02-19 6af2255 add mandelbrot naive output
+
+ .vscode/settings.json                  |   3 +++
+ __pycache__/mandelbrot.cpython-311.pyc | Bin 0 -> 745 bytes
+ mandelbrot_naive.png                   | Bin 0 -> 58184 bytes
+ test_install.py                        |  19 +++++++++++++++++++
+ 4 files changed, 22 insertions(+)
+2026-02-05 6896bc6 Add plots
+
+ mandelbrot.py | 15 +++++++++++++++
+ 1 file changed, 15 insertions(+)
+2026-02-05 9c09fc3 Add timer to grid
+
+ mandelbrot.py | 11 +++++++++--
+ 1 file changed, 9 insertions(+), 2 deletions(-)
+2026-02-05 0bbad0a Add mandelbrot grid implementation
+
+ mandelbrot.py | 22 ++++++++++++++++++++++
+ 1 file changed, 22 insertions(+)
+2026-02-05 909328c Add mandelbrot poit implementation
+
+ mandelbrot.py | 24 ++++++++++--------------
+ 1 file changed, 10 insertions(+), 14 deletions(-)
+2026-02-05 6306144 Add TODO comment
+
+ mandelbrot.py | 22 ++++++++++++++++++++++
+ 1 file changed, 22 insertions(+)
+2026-02-05 320b5c5 Add mandelbrot skeleton
+
+ mandelbrot.py | 0
+ 1 file changed, 0 insertions(+), 0 deletions(-)
+2026-02-05 1b1f6cf Add python environment specifications
+
+ environment.yml | 173 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 173 insertions(+)

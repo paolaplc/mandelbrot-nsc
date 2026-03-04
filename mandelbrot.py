@@ -12,6 +12,7 @@ import cProfile
 import pstats
 
 
+
 #lesson2 milestone 1
 def create_complex_grid(xmin, xmax, ymin, ymax, n):
     x = np.linspace(xmin, xmax, n)
@@ -69,6 +70,7 @@ def mandelbrot_point(c, max_iter=100):
     return max_iter
 
 
+@profile
 def compute_mandelbrot_grid(xmin, xmax, ymin, ymax, width, height, max_iter):
 
     # defining the region 
@@ -124,6 +126,8 @@ def col_sum(A):
 # Main
 # -------------------------
 if __name__ == "__main__":
+
+    
     print("RUNNING mandelbrot.py")
     #lesson2 milestone 1
     C = create_complex_grid(-2, 1, -1.5, 1.5, 1024)
@@ -140,6 +144,7 @@ if __name__ == "__main__":
         "naive_profile.prof",
         top_n=10
     )
+    
 
     print("\n--- cProfile: Vectorized NumPy 512x512 ---")
     profile_function(

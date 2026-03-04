@@ -10,8 +10,13 @@ import time
 import statistics
 import cProfile
 import pstats
+from numba import njit
 
-
+try:
+    profile
+except NameError:
+    def profile(func):
+        return func
 
 #lesson2 milestone 1
 def create_complex_grid(xmin, xmax, ymin, ymax, n):
@@ -52,6 +57,8 @@ def profile_function(callable_fn, prof_filename, top_n=10):
     stats = pstats.Stats(prof_filename)
     stats.sort_stats("cumulative")
     stats.print_stats(top_n)
+
+
 
 
 
@@ -104,6 +111,67 @@ def compute_mandelbrot_vectorized(xmin, xmax, ymin, ymax, n, max_iter):
 
     return M
 
+# ---------------------------------
+
+#lesson3: milestone 3 : Numba 
+
+#hybrid
+@njit
+def mandelbrot_point_numba(c, max_iter=100):
+    z = 0j
+    for n in range(max_iter):
+        if (z.real*z.real + z.imag*z.imag) > 4.0:
+            return n
+        z = z*z + c
+    return max_iter
+
+
+def compute_mandelbrot_hybrid(xmin, xmax, ymin, ymax, width, height, max_iter=100):
+
+    x = np.linspace(xmin, xmax, width)
+    y = np.linspace(ymin, ymax, height)
+
+    counts = np.zeros((height, width), dtype=np.int32)
+
+    for j in range(height):
+        for i in range(width):
+            c = x[i] + 1j*y[j]
+            counts[j, i] = mandelbrot_point_numba(c, max_iter)
+
+    return counts
+
+
+# full compiled
+@njit
+def compute_mandelbrot_numba(xmin, xmax, ymin, ymax, width, height, max_iter=100):
+
+    x = np.linspace(xmin, xmax, width)
+    y = np.linspace(ymin, ymax, height)
+
+    result = np.zeros((height, width), dtype=np.int32)
+
+    for j in range(height):
+        for i in range(width):
+
+            c = x[i] + 1j*y[j]
+
+            z = 0j
+            n = 0
+
+            while n < max_iter and (z.real*z.real + z.imag*z.imag) <= 4.0:
+                z = z*z + c
+                n += 1
+
+            result[j, i] = n
+
+    return result
+
+
+
+# ---------------------------------
+
+
+
 #l2:milestone3 : memory access patterns 
 def row_sum(A):
     N = A.shape[0]
@@ -127,7 +195,6 @@ def col_sum(A):
 # -------------------------
 if __name__ == "__main__":
 
-    
     print("RUNNING mandelbrot.py")
     #lesson2 milestone 1
     C = create_complex_grid(-2, 1, -1.5, 1.5, 1024)
@@ -137,6 +204,7 @@ if __name__ == "__main__":
     # sanity check
     print("mandelbrot_point(0) =", mandelbrot_point(0))
 
+    
     #lessin 3 milestone 1 calling profiling 
     print("\n--- cProfile: Naive 512x512 ---")
     profile_function(
@@ -152,7 +220,7 @@ if __name__ == "__main__":
         "numpy_profile.prof",
         top_n=10
     )
-
+    
 
     # benchmark naive baseline (>=3 runs, perf_counter)
     t_med, result = benchmark(
@@ -215,39 +283,35 @@ if __name__ == "__main__":
 
     #l2:molestone4: Scaling 
 
-sizes = [256, 512, 1024, 2048, 4096]
-runtimes = []
+    sizes = [256, 512, 1024, 2048, 4096]
+    runtimes = []
 
-for n in sizes:
-    t_n, _ = benchmark(
-        compute_mandelbrot_vectorized,
-        -2, 1, -1.5, 1.5,
-        n, 100,
-        n_runs=3
-    )
-    runtimes.append(t_n)
+    for n in sizes:
+        t_n, _ = benchmark(
+            compute_mandelbrot_vectorized,
+            -2, 1, -1.5, 1.5,
+            n, 100,
+            n_runs=3
+        )
+        runtimes.append(t_n)
 
-# plot: grid size vs runtime
-plt.figure()
-plt.plot(sizes, runtimes, marker="o")
-plt.xlabel("Grid size n (n×n)")
-plt.ylabel("Runtime (median seconds)")
-plt.title("Vectorized Mandelbrot: runtime vs grid size")
-plt.grid(True)
-plt.show()
+    # plot: grid size vs runtime
+    plt.figure()
+    plt.plot(sizes, runtimes, marker="o")
+    plt.xlabel("Grid size n (n×n)")
+    plt.ylabel("Runtime (median seconds)")
+    plt.title("Vectorized Mandelbrot: runtime vs grid size")
+    plt.grid(True)
+    plt.show()
 
-#predicting 2048^2 from 1024^2
-X = runtimes[sizes.index(1024)]
-pred_2048 = 4 * X
-meas_2048 = runtimes[sizes.index(2048)]
-print(f"Prediction: if 1024x1024 takes X={X:.4f}s, then 2048x2048 ~ 4X = {pred_2048:.4f}s")
-print(f"Measured 2048x2048: {meas_2048:.4f}s   Ratio(measured/pred)={meas_2048/pred_2048:.3f}")
+    #predicting 2048^2 from 1024^2
+    X = runtimes[sizes.index(1024)]
+    pred_2048 = 4 * X
+    meas_2048 = runtimes[sizes.index(2048)]
+    print(f"Prediction: if 1024x1024 takes X={X:.4f}s, then 2048x2048 ~ 4X = {pred_2048:.4f}s")
+    print(f"Measured 2048x2048: {meas_2048:.4f}s   Ratio(measured/pred)={meas_2048/pred_2048:.3f}")
 
-
-
-
-
-
+    
 
 
 

@@ -1,3 +1,4 @@
+
 from mandelbrot import compute_mandelbrot_grid
 
 try:
@@ -15,4 +16,3 @@ def run():
 if __name__ == "__main__":
     run()
 
-    

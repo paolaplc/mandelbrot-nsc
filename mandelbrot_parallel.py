@@ -2,6 +2,11 @@ import numpy as np
 from numba import njit
 from mandelbrot import compute_mandelbrot_numba
 from multiprocessing import Pool
+import os
+import time
+import statistics
+import matplotlib.pyplot as plt
+
 
 
 #lesson4 milestone 1
@@ -85,5 +90,58 @@ if __name__ == "__main__":
     print("Max difference:", diff.max())
     print("Different pixels:", (diff > 0).sum())
 
+    # serial baseline
+    times = []
+    for _ in range(3):
+        t0 = time.perf_counter()
+        mandelbrot_serial(N, x_min, x_max, y_min, y_max, max_iter)
+        times.append(time.perf_counter() - t0)
 
- 
+    t_serial = statistics.median(times)
+    print(f"\nSerial baseline: {t_serial:.4f}s")
+
+    results = []
+
+    for n_workers in range(1, os.cpu_count() + 1):
+        chunk_size = max(1, N // n_workers)
+        chunks, row = [], 0
+
+        while row < N:
+            end = min(row + chunk_size, N)
+            chunks.append((row, end, N, x_min, x_max, y_min, y_max, max_iter))
+            row = end
+
+        with Pool(processes=n_workers) as pool:
+            pool.map(_worker, chunks)   # warm-up, untimed
+
+            times = []
+            for _ in range(3):
+                t0 = time.perf_counter()
+                parts = pool.map(_worker, chunks)
+                np.vstack(parts)
+                times.append(time.perf_counter() - t0)
+
+        t_par = statistics.median(times)
+        speedup = t_serial / t_par
+        efficiency = speedup / n_workers
+
+        results.append((n_workers, t_par, speedup, efficiency))
+
+        print(
+            f"{n_workers:2d} workers: "
+            f"{t_par:.4f}s, speedup={speedup:.2f}x, efficiency={efficiency:.2f}"
+        )
+
+    workers = [r[0] for r in results]
+    speedups = [r[2] for r in results]
+
+    plt.figure()
+    plt.plot(workers, speedups, marker="o", label="Measured")
+    plt.plot(workers, workers, "--", label="Ideal")
+    plt.xlabel("Number of workers")
+    plt.ylabel("Speedup")
+    plt.title("Parallel Mandelbrot speedup")
+    plt.grid(True)
+    plt.legend()
+    plt.savefig("mandelbrot_parallel_speedup.png", dpi=150)
+    plt.show()

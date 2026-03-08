@@ -74,7 +74,7 @@ if __name__ == "__main__":
         n_runs=3
     )
 
-    print("Result shape:", result.shape)
+    print("Result shape:", result_naive.shape)
 
     print("\nVectorized:")
     t_vec, result_vec = benchmark(compute_mandelbrot_vectorized, -2, 1, -1.5, 1.5, 1024, 100, n_runs=3)

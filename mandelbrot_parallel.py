@@ -1,6 +1,7 @@
 import numpy as np
 from numba import njit
 from mandelbrot import compute_mandelbrot_numba
+from multiprocessing import Pool
 
 
 #lesson4 milestone 1
@@ -43,6 +44,26 @@ def mandelbrot_serial(N, x_min, x_max, y_min, y_max, max_iter=100):
     return mandelbrot_chunk(0, N, N, x_min, x_max, y_min, y_max, max_iter)
 
 
+#lesson 4 milestone 2 
+
+def _worker(args):
+    return mandelbrot_chunk(*args)
+
+
+def mandelbrot_parallel(N, x_min, x_max, y_min, y_max, max_iter=100, n_workers=4):
+    chunk_size = max(1, N // n_workers)
+
+    chunks = []
+    row = 0
+    while row < N:
+        row_end = min(row + chunk_size, N)
+        chunks.append((row, row_end, N, x_min, x_max, y_min, y_max, max_iter))
+        row = row_end
+
+    with Pool(processes=n_workers) as pool:
+        parts = pool.map(_worker, chunks)
+
+    return np.vstack(parts)
 
 
 if __name__ == "__main__":
@@ -51,14 +72,18 @@ if __name__ == "__main__":
     y_min, y_max = -1.25, 1.25
     max_iter = 100
 
-    result = mandelbrot_serial(N, x_min, x_max, y_min, y_max, max_iter)
+    result_serial = mandelbrot_serial(N, x_min, x_max, y_min, y_max, max_iter)
+    result_parallel = mandelbrot_parallel(N, x_min, x_max, y_min, y_max, max_iter, n_workers=4)
+
 
     result_old = compute_mandelbrot_numba(-2.5, 1.0, -1.25, 1.25, 1024, 1024, 100)
     
-    #checking if match the numba l3 
-    print("Match with L3 numba:", np.allclose(result, result_old))
-    diff = np.abs(result - result_old)
+    print("Parallel matches serial:", np.allclose(result_parallel, result_serial))
+    print("Parallel matches L3 numba:", np.allclose(result_parallel, result_old))
+
+    diff = np.abs(result_parallel - result_old)
     print("Max difference:", diff.max())
     print("Different pixels:", (diff > 0).sum())
 
-    
+
+ 

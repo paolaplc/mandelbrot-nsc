@@ -161,3 +161,54 @@ if __name__ == "__main__":
     plt.legend()
     plt.savefig("mandelbrot_parallel_speedup.png", dpi=150)
     plt.show()
+
+    #lesson 5 milestone 2: n_chunks experiment 
+    print("\n--- chunk sweep ---")
+    n_workers = os.cpu_count()
+
+    chunk_values = [1, 2, 4, 8, 16, 32, 64, 128]
+
+    chunk_results = []
+
+    for n_chunks in chunk_values:
+
+        # warm-up
+        _ = mandelbrot_parallel(
+            N, x_min, x_max, y_min, y_max,
+            max_iter,
+            n_workers=n_workers,
+            n_chunks=n_chunks
+        )
+
+        times = []
+        for _ in range(3):
+            t0 = time.perf_counter()
+
+            mandelbrot_parallel(
+                N, x_min, x_max, y_min, y_max,
+                max_iter,
+                n_workers=n_workers,
+                n_chunks=n_chunks
+            )
+
+            times.append(time.perf_counter() - t0)
+
+        t = statistics.median(times)
+
+        chunk_results.append((n_chunks, t))
+
+        print(f"{n_chunks:4d} chunks : {t:.4f}s")
+
+    chunks = [r[0] for r in chunk_results]
+    times = [r[1] for r in chunk_results]
+
+    plt.figure()
+    plt.plot(chunks, times, marker="o")
+    plt.xlabel("Number of chunks")
+    plt.ylabel("Runtime (s)")
+    plt.title("Chunk count vs runtime")
+    plt.xscale("log")
+    plt.grid(True)
+
+    plt.savefig("mandelbrot_chunk_scaling.png", dpi=150)
+    plt.show()

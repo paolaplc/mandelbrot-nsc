@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 
 
 #lesson4 milestone 1
-@njit
+@njit(cache=True)
 def mandelbrot_pixel(c_real, c_imag, max_iter):
     z_real = 0.0
     z_imag = 0.0
@@ -28,7 +28,7 @@ def mandelbrot_pixel(c_real, c_imag, max_iter):
     return max_iter
 
 
-@njit
+@njit(cache=True)
 def mandelbrot_chunk(row_start, row_end, N, x_min, x_max, y_min, y_max, max_iter):
     out = np.empty((row_end - row_start, N), dtype=np.int32)
 
@@ -54,9 +54,14 @@ def mandelbrot_serial(N, x_min, x_max, y_min, y_max, max_iter=100):
 def _worker(args):
     return mandelbrot_chunk(*args)
 
+#lesson 5 milestone 1: n_chunks=None
+def mandelbrot_parallel(N, x_min, x_max, y_min, y_max, max_iter=100, n_workers=4,n_chunks=None ):
+    
 
-def mandelbrot_parallel(N, x_min, x_max, y_min, y_max, max_iter=100, n_workers=4):
-    chunk_size = max(1, N // n_workers)
+    if n_chunks is None:
+        n_chunks = n_workers
+
+    chunk_size = max(1, N // n_chunks)
 
     chunks = []
     row = 0
@@ -64,6 +69,8 @@ def mandelbrot_parallel(N, x_min, x_max, y_min, y_max, max_iter=100, n_workers=4
         row_end = min(row + chunk_size, N)
         chunks.append((row, row_end, N, x_min, x_max, y_min, y_max, max_iter))
         row = row_end
+    
+    tiny = [(0, 8, 8, x_min, x_max, y_min, y_max, max_iter)]
 
     with Pool(processes=n_workers) as pool:
         parts = pool.map(_worker, chunks)
@@ -78,7 +85,13 @@ if __name__ == "__main__":
     max_iter = 100
 
     result_serial = mandelbrot_serial(N, x_min, x_max, y_min, y_max, max_iter)
-    result_parallel = mandelbrot_parallel(N, x_min, x_max, y_min, y_max, max_iter, n_workers=4)
+    result_parallel = mandelbrot_parallel(
+        N, x_min, x_max, y_min, y_max,
+        max_iter,
+        n_workers=4,
+        n_chunks=16
+    )
+
 
 
     result_old = compute_mandelbrot_numba(-2.5, 1.0, -1.25, 1.25, 1024, 1024, 100)
@@ -103,32 +116,35 @@ if __name__ == "__main__":
     results = []
 
     for n_workers in range(1, os.cpu_count() + 1):
-        chunk_size = max(1, N // n_workers)
-        chunks, row = [], 0
+        n_chunks = 4 * n_workers
 
-        while row < N:
-            end = min(row + chunk_size, N)
-            chunks.append((row, end, N, x_min, x_max, y_min, y_max, max_iter))
-            row = end
+        # warm-up
+        _ = mandelbrot_parallel(
+            N, x_min, x_max, y_min, y_max,
+            max_iter,
+            n_workers=n_workers,
+            n_chunks=n_chunks
+        )
 
-        with Pool(processes=n_workers) as pool:
-            pool.map(_worker, chunks)   # warm-up, untimed
-
-            times = []
-            for _ in range(3):
-                t0 = time.perf_counter()
-                parts = pool.map(_worker, chunks)
-                np.vstack(parts)
-                times.append(time.perf_counter() - t0)
+        times = []
+        for _ in range(3):
+            t0 = time.perf_counter()
+            mandelbrot_parallel(
+                N, x_min, x_max, y_min, y_max,
+                max_iter,
+                n_workers=n_workers,
+                n_chunks=n_chunks
+            )
+            times.append(time.perf_counter() - t0)
 
         t_par = statistics.median(times)
         speedup = t_serial / t_par
         efficiency = speedup / n_workers
 
-        results.append((n_workers, t_par, speedup, efficiency))
+        results.append((n_workers, n_chunks, t_par, speedup, efficiency))
 
         print(
-            f"{n_workers:2d} workers: "
+            f"{n_workers:2d} workers, {n_chunks:2d} chunks: "
             f"{t_par:.4f}s, speedup={speedup:.2f}x, efficiency={efficiency:.2f}"
         )
 

@@ -3,6 +3,8 @@ import time
 import statistics
 from multiprocessing import Pool
 from mandelbrot_parallel import _worker, mandelbrot_parallel
+from mandelbrot_dask import mandelbrot_dask
+
 
 
 from mandelbrot import (
@@ -77,6 +79,21 @@ if __name__ == "__main__":
 
     t_parallel = statistics.median(times)
 
+    # Dask local
+    times = []
+    for _ in range(3):
+        t0 = time.perf_counter()
+        result_dask = mandelbrot_dask(
+            N, x_min, x_max, y_min, y_max,
+            max_iter=max_iter,
+            n_chunks=32
+        )
+        times.append(time.perf_counter() - t0)
+
+    t_dask = statistics.median(times)
+
+
+
     print("Implementation        Time (s)   Speedup")
     print("------------------------------------------")
 
@@ -85,8 +102,12 @@ if __name__ == "__main__":
     print(f"Numba (@njit)         {t_numba:.4f}     {t_naive/t_numba:.2f}x")
     print(f"Multiprocessing       {t_parallel:.4f}     {t_naive/t_parallel:.2f}x")
     print(f"\nParallel vs Numba speedup: {t_numba/t_parallel:.2f}x")
+    print(f"Dask local            {t_dask:.4f}     {t_naive/t_dask:.2f}x")
+    print(f"\nDask vs Numba speedup: {t_numba/t_dask:.2f}x")
+    print(f"Multiprocessing vs Numba speedup: {t_numba/t_parallel:.2f}x")
 
     print("\nValidation checks:")
     print("NumPy matches naive:", np.allclose(result_naive, result_numpy))
     print("Numba matches naive:", np.allclose(result_naive, result_numba))
     print("Parallel matches naive:", np.allclose(result_naive, result_parallel))
+    print("Dask matches naive:", np.allclose(result_naive, result_dask))

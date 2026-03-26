@@ -9,6 +9,8 @@ import matplotlib.pyplot as plt
 from multiprocessing import Pool
 
 
+
+
 #lesson4 milestone 1
 @njit(cache=True)
 def mandelbrot_pixel(c_real, c_imag, max_iter):

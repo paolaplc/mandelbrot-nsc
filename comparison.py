@@ -84,6 +84,7 @@ if __name__ == "__main__":
     print(f"NumPy vectorized      {t_numpy:.4f}     {t_naive/t_numpy:.2f}x")
     print(f"Numba (@njit)         {t_numba:.4f}     {t_naive/t_numba:.2f}x")
     print(f"Multiprocessing       {t_parallel:.4f}     {t_naive/t_parallel:.2f}x")
+    print(f"\nParallel vs Numba speedup: {t_numba/t_parallel:.2f}x")
 
     print("\nValidation checks:")
     print("NumPy matches naive:", np.allclose(result_naive, result_numpy))

@@ -1,6 +1,9 @@
 import numpy as np
 import time
 import statistics
+from multiprocessing import Pool
+from mandelbrot_parallel import _worker, mandelbrot_parallel
+
 
 from mandelbrot import (
     compute_mandelbrot_grid,
@@ -8,7 +11,7 @@ from mandelbrot import (
     compute_mandelbrot_numba,
 )
 
-from mandelbrot_parallel import mandelbrot_parallel
+
 
 
 def benchmark(func, *args, n_runs=3):
@@ -52,25 +55,25 @@ if __name__ == "__main__":
         x_min, x_max, y_min, y_max,
         N, N, max_iter
     )
+ 
+    #Multiprocessing
+    
+    tiny = [(0, 8, 8, x_min, x_max, y_min, y_max, max_iter)]
 
-    # Parallel
-    _ = mandelbrot_parallel(
-        N, x_min, x_max, y_min, y_max,
-        max_iter,
-        n_workers=8,
-        n_chunks=2
-    )
-
-    times = []
-    for _ in range(3):
-        t0 = time.perf_counter()
-        result_parallel = mandelbrot_parallel(
-            N, x_min, x_max, y_min, y_max,
-            max_iter,
-            n_workers=8,
-            n_chunks=2
-        )
-        times.append(time.perf_counter() - t0)
+    with Pool(processes=8) as pool:
+        pool.map(_worker, tiny)
+    
+        times = []
+        for _ in range(3):
+            t0 = time.perf_counter()
+            result_parallel = mandelbrot_parallel(
+                N, x_min, x_max, y_min, y_max,
+                max_iter,
+                n_workers=8,
+                n_chunks=32,
+                pool = pool
+            )
+            times.append(time.perf_counter() - t0)
 
     t_parallel = statistics.median(times)
 

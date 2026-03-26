@@ -6,7 +6,7 @@ import os
 import time
 import statistics
 import matplotlib.pyplot as plt
-
+from multiprocessing import Pool
 
 
 #lesson4 milestone 1
@@ -49,15 +49,16 @@ def mandelbrot_serial(N, x_min, x_max, y_min, y_max, max_iter=100):
     return mandelbrot_chunk(0, N, N, x_min, x_max, y_min, y_max, max_iter)
 
 
-#lesson 4 milestone 2 
-
+# lesson 4 milestone 2
 def _worker(args):
     return mandelbrot_chunk(*args)
 
-#lesson 5 milestone 1: n_chunks=None
-def mandelbrot_parallel(N, x_min, x_max, y_min, y_max, max_iter=100, n_workers=4,n_chunks=None ):
-    
 
+# lesson 5 milestone 1
+def mandelbrot_parallel(
+    N, x_min, x_max, y_min, y_max,
+    max_iter=100, n_workers=4, n_chunks=None, pool=None
+):
     if n_chunks is None:
         n_chunks = n_workers
 
@@ -69,13 +70,19 @@ def mandelbrot_parallel(N, x_min, x_max, y_min, y_max, max_iter=100, n_workers=4
         row_end = min(row + chunk_size, N)
         chunks.append((row, row_end, N, x_min, x_max, y_min, y_max, max_iter))
         row = row_end
-    
+
+    if pool is not None:
+        return np.vstack(pool.map(_worker, chunks))
+
     tiny = [(0, 8, 8, x_min, x_max, y_min, y_max, max_iter)]
 
     with Pool(processes=n_workers) as pool:
+        pool.map(_worker, tiny)   # warm-up: load JIT cache in workers
         parts = pool.map(_worker, chunks)
 
     return np.vstack(parts)
+
+
 
 
 if __name__ == "__main__":
@@ -118,24 +125,23 @@ if __name__ == "__main__":
     for n_workers in range(1, os.cpu_count() + 1):
         n_chunks = 4 * n_workers
 
-        # warm-up
-        _ = mandelbrot_parallel(
-            N, x_min, x_max, y_min, y_max,
-            max_iter,
-            n_workers=n_workers,
-            n_chunks=n_chunks
-        )
+        tiny = [(0, 8, 8, x_min, x_max, y_min, y_max, max_iter)]
 
-        times = []
-        for _ in range(3):
-            t0 = time.perf_counter()
-            mandelbrot_parallel(
-                N, x_min, x_max, y_min, y_max,
-                max_iter,
-                n_workers=n_workers,
-                n_chunks=n_chunks
-            )
-            times.append(time.perf_counter() - t0)
+        with Pool(processes=n_workers) as pool:
+            # warm-up inside the same pool
+            pool.map(_worker, tiny)
+
+            times = []
+            for _ in range(3):
+                t0 = time.perf_counter()
+                mandelbrot_parallel(
+                    N, x_min, x_max, y_min, y_max,
+                    max_iter,
+                    n_workers=n_workers,
+                    n_chunks=n_chunks,
+                    pool=pool
+                )
+                times.append(time.perf_counter() - t0)
 
         t_par = statistics.median(times)
         speedup = t_serial / t_par
@@ -149,7 +155,7 @@ if __name__ == "__main__":
         )
 
     workers = [r[0] for r in results]
-    speedups = [r[2] for r in results]
+    speedups = [r[3] for r in results]
 
     plt.figure()
     plt.plot(workers, speedups, marker="o", label="Measured")
@@ -164,40 +170,38 @@ if __name__ == "__main__":
 
     #lesson 5 milestone 2: n_chunks experiment 
     print("\n--- chunk sweep ---")
-    n_workers = os.cpu_count()
-
-    chunk_values = [1, 2, 4, 8, 16, 32, 64, 128]
+    n_workers = 8
 
     chunk_results = []
 
-    for n_chunks in chunk_values:
+    for mult in [1, 2, 4, 8, 16]:
+        n_chunks = mult * n_workers
 
-        # warm-up
-        _ = mandelbrot_parallel(
-            N, x_min, x_max, y_min, y_max,
-            max_iter,
-            n_workers=n_workers,
-            n_chunks=n_chunks
-        )
+        tiny = [(0, 8, 8, x_min, x_max, y_min, y_max, max_iter)]
 
-        times = []
-        for _ in range(3):
-            t0 = time.perf_counter()
+        with Pool(processes=n_workers) as pool:
+            pool.map(_worker, tiny)
 
-            mandelbrot_parallel(
-                N, x_min, x_max, y_min, y_max,
-                max_iter,
-                n_workers=n_workers,
-                n_chunks=n_chunks
-            )
+            times = []
+            for _ in range(3):
+                t0 = time.perf_counter()
 
-            times.append(time.perf_counter() - t0)
+                mandelbrot_parallel(
+                    N, x_min, x_max, y_min, y_max,
+                    max_iter,
+                    n_workers=n_workers,
+                    n_chunks=n_chunks,
+                    pool=pool
+                )
+
+                times.append(time.perf_counter() - t0)
 
         t = statistics.median(times)
+        lif = n_workers * t / t_serial - 1
 
-        chunk_results.append((n_chunks, t))
+        chunk_results.append((n_chunks, t, lif))
 
-        print(f"{n_chunks:4d} chunks : {t:.4f}s")
+        print(f"{n_chunks:4d} chunks : {t:.4f}s, LIF={lif:.2f}")
 
     chunks = [r[0] for r in chunk_results]
     times = [r[1] for r in chunk_results]
@@ -212,3 +216,4 @@ if __name__ == "__main__":
 
     plt.savefig("mandelbrot_chunk_scaling.png", dpi=150)
     plt.show()
+    

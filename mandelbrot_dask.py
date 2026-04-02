@@ -1,7 +1,7 @@
 import numpy as np
 from dask import delayed
-#from dask.distributed import Client, LocalCluster #local 
-from dask.distributed import Client #strato 
+from dask.distributed import Client, LocalCluster #local 
+#from dask.distributed import Client #strato 
 import dask
 import time
 import statistics
@@ -35,12 +35,12 @@ def mandelbrot_dask(
 if __name__ == "__main__":
     N, max_iter = 4096, 100
     X_MIN, X_MAX, Y_MIN, Y_MAX = -2.5, 1.0, -1.25, 1.25
-    n_workers = 2
+    n_workers = 8
 
 
-    #cluster = LocalCluster(n_workers=n_workers, threads_per_worker=1) #local 
-    #client = Client(cluster) #local 
-    client = Client("tcp://10.92.1.19:8786") #Strato 
+    cluster = LocalCluster(n_workers=n_workers, threads_per_worker=1) #local 
+    client = Client(cluster) #local 
+    #client = Client("tcp://10.92.1.19:8786") #Strato 
 
     print(f"Dashboard: {client.dashboard_link}")
 
@@ -67,8 +67,8 @@ if __name__ == "__main__":
         )
         times.append(time.perf_counter() - t0)
 
-    #print(f"Dask local (n_chunks=32): {statistics.median(times):.3f} s")
-    print(f"Dask cluster (n_chunks=32): {statistics.median(times):.3f} s")
+    print(f"Dask local (n_chunks=32): {statistics.median(times):.3f} s")
+    #print(f"Dask cluster (n_chunks=32): {statistics.median(times):.3f} s")
 
     # M2: serial baseline
     times = []
@@ -111,13 +111,13 @@ if __name__ == "__main__":
     plt.plot(chunks, times_plot, marker="o")
     plt.xlabel("Number of chunks")
     plt.ylabel("Runtime (s)")
-    #plt.title("Dask local chunk sweep")
-    plt.title("Dask cluster chunk sweep")
+    plt.title("Dask local chunk sweep")
+    #plt.title("Dask cluster chunk sweep")
     plt.xscale("log")
     plt.grid(True)
-    #plt.savefig("dask_chunk_sweep.png", dpi=150)
-    plt.savefig("dask_cluster_chunk_sweep.png", dpi=150)
+    plt.savefig("dask_chunk_sweep.png", dpi=150)
+    #plt.savefig("dask_cluster_chunk_sweep.png", dpi=150)
     plt.show()
 
     client.close()
-    #cluster.close()
+    cluster.close()

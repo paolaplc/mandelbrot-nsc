@@ -29,7 +29,7 @@ def benchmark(func, *args, n_runs=3):
 
 if __name__ == "__main__":
 
-    N = 1024
+    N = 4096
     x_min, x_max = -2.5, 1.0
     y_min, y_max = -1.25, 1.25
     max_iter = 100

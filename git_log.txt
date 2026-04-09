@@ -1,3 +1,82 @@
+2026-04-02 3dca1a9 Changing grid for Local dask to 4096
+
+ comparison.py        |   2 +-
+ dask_chunk_sweep.png | Bin 37240 -> 44378 bytes
+ mandelbrot_dask.py   |  26 +++++++++++++-------------
+ 3 files changed, 14 insertions(+), 14 deletions(-)
+2026-03-27 c164679 Dask cluster
+
+ mandelbrot_dask.py | 24 +++++++++++++++---------
+ 1 file changed, 15 insertions(+), 9 deletions(-)
+2026-03-26 bb8250c Comparizon of all methods
+
+ comparison.py | 23 ++++++++++++++++++++++-
+ 1 file changed, 22 insertions(+), 1 deletion(-)
+2026-03-26 ac2c5fb Chunk size sweep to find the minimun wall time and LIF
+
+ dask_chunk_sweep.png | Bin 0 -> 37240 bytes
+ mandelbrot_dask.py   |  74 ++++++++++++++++++++++++++++++++++++++++++---------
+ 2 files changed, 62 insertions(+), 12 deletions(-)
+2026-03-26 baa77f9 Adding dask local Mandelbrot implementation
+
+ comparison.py          |  1 +
+ mandelbrot_dask.py     | 67 ++++++++++++++++++++++++++++++++++++++++++++++++++
+ mandelbrot_parallel.py |  2 ++
+ 3 files changed, 70 insertions(+)
+2026-03-26 8dd38d6 Refactoring functions for parallel Mandelbrot
+
+ comparison.py                                  |  43 ++++++-----
+ efore/mandelbrot_chunk_scaling 4.png           | Bin 0 -> 45755 bytes
+ efore/mandelbrot_chunk_scaling 6.png           | Bin 0 -> 39879 bytes
+ efore/mandelbrot_chunk_scaling 8 power off.png | Bin 0 -> 39235 bytes
+ efore/mandelbrot_chunk_scaling 8.png           | Bin 0 -> 38834 bytes
+ efore/mandelbrot_chunk_scaling.png             | Bin 0 -> 49046 bytes
+ mandelbrot_chunk_scaling.png                   | Bin 36792 -> 42045 bytes
+ mandelbrot_parallel.py                         | 103 +++++++++++++------------
+ mandelbrot_parallel_speedup.png                | Bin 0 -> 46683 bytes
+ 9 files changed, 77 insertions(+), 69 deletions(-)
+2026-03-12 69a8378 Comparison of all methods
+
+ comparison.py | 88 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 88 insertions(+)
+2026-03-12 ad6b84e Measuring chunk granularity to find optimal chunk count
+
+ mandelbrot_chunk_scaling.png     | Bin 0 -> 36792 bytes
+ mandelbrot_parallel.py           |  51 +++++++++++++++++++++++++++++++++++++++
+ mandelbrot_parallel_speedup.png  | Bin 39077 -> 0 bytes
+ mandelbrot_parallel_speedup2.png | Bin 0 -> 38624 bytes
+ 4 files changed, 51 insertions(+)
+2026-03-12 703cdba Adding a  tunable chunk count to parallel Mandelbrot
+
+ mandelbrot_parallel.py          |  62 +++++++++++++++++++++++++---------------
+ mandelbrot_parallel_speedup.png | Bin 43886 -> 39077 bytes
+ 2 files changed, 39 insertions(+), 23 deletions(-)
+2026-03-08 0b69522 Benchmark sweep - speedup and efficiency
+
+ mandelbrot_parallel.py          |  62 ++++++++++++++++++++++++++++++++++++++--
+ mandelbrot_parallel_speedup.png | Bin 0 -> 43886 bytes
+ 2 files changed, 60 insertions(+), 2 deletions(-)
+2026-03-08 fb57a77 adding multiprocessing row chunk Mandelbrot parallel
+
+ mandelbrot_parallel.py | 35 ++++++++++++++++++++++++++++++-----
+ 1 file changed, 30 insertions(+), 5 deletions(-)
+2026-03-08 44a3056  Refactor Mandelbrot into pixel chunk and serial functions
+
+ mandelbrot_parallel.py | 64 ++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 64 insertions(+)
+2026-03-08 a321876 
+
+ __pycache__/mandelbrot.cpython-311.pyc | Bin 8100 -> 8100 bytes
+ analysis.py                            |   2 +-
+ mandelbrot_naive.png                   | Bin 105013 -> 105030 bytes
+ mandelbrot_vectorized.png              | Bin 106438 -> 106571 bytes
+ naive_profile.prof                     | Bin 2747 -> 2811 bytes
+ numpy_profile.prof                     | Bin 5622 -> 5686 bytes
+ 6 files changed, 1 insertion(+), 1 deletion(-)
+2026-03-04 c82f567 Log-report for MP1
+
+ git_log.txt | 104 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 104 insertions(+)
 2026-03-04 03b9a77 Data type optimization float32 vs float 64 : almost the same on this hardware
 
  __pycache__/mandelbrot.cpython-311.pyc | Bin 12888 -> 8100 bytes

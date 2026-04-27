@@ -15,8 +15,8 @@ __kernel void mandelbrot(
     int row = get_global_id(1);
 
     if (col >= N || row >= N) return;
-    float c_real = x_min + col * (x_max - x_min) / (float)N;
-    float c_imag = y_min + row * (y_max - y_min) / (float)N;
+    float c_real = x_min + col * (x_max - x_min) / (float)(N - 1);
+    float c_imag = y_min + row * (y_max - y_min) / (float)(N - 1);
 
     float zr = 0.0f;
     float zi = 0.0f;
@@ -50,8 +50,8 @@ __kernel void mandelbrot_f64(
 
     if (col >= N || row >= N) return;
 
-    double c_real = x_min + col * (x_max - x_min) / (double)N;
-    double c_imag = y_min + row * (y_max - y_min) / (double)N;
+    double c_real = x_min + col * (x_max - x_min) / (double)(N - 1);
+    double c_imag = y_min + row * (y_max - y_min) / (double)(N - 1);
 
     double zr = 0.0;
     double zi = 0.0;

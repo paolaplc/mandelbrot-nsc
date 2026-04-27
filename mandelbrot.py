@@ -5,7 +5,6 @@ Course: Numerical Scientific Computing 2026
 """
 
 import numpy as np
-import matplotlib.pyplot as plt
 import time
 import statistics
 import cProfile
@@ -24,7 +23,8 @@ except NameError:
 #-------------------------
 
 #lesson2 milestone 1
-def create_complex_grid(xmin, xmax, ymin, ymax, n):
+def create_complex_grid(xmin: float, xmax: float, ymin: float, ymax: float, n: int) -> np.ndarray:
+    """Create complex grid from domain."""
     x = np.linspace(xmin, xmax, n)
     y = np.linspace(ymin, ymax, n)
     X, Y = np.meshgrid(x, y)
@@ -33,7 +33,7 @@ def create_complex_grid(xmin, xmax, ymin, ymax, n):
 
 
 #lesson2 benchmark 
-def benchmark(func, *args, n_runs=3):
+def benchmark(func, *args, n_runs: int = 3) -> tuple:
     """Time func, return median of n_runs."""
     times = []
     result = None
@@ -51,7 +51,8 @@ def benchmark(func, *args, n_runs=3):
 
 
 #lesson 3 milestone 1 profile fuction 
-def profile_function(callable_fn, prof_filename, top_n=10):
+def profile_function(callable_fn, prof_filename: str, top_n: int = 10) -> None:
+    """Profile function using cProfile."""
 
     cProfile.runctx(
         "callable_fn()",
@@ -71,7 +72,8 @@ def profile_function(callable_fn, prof_filename, top_n=10):
 #-------------------------
 
 #l1: Naive approach  lesson 1 
-def mandelbrot_point(c, max_iter=100):
+def mandelbrot_point(c: complex, max_iter: int = 100) -> int:
+    """Return escape iteration for one complex point."""
     z = 0
     for n in range(max_iter):
         if abs(z) > 2:
@@ -82,6 +84,7 @@ def mandelbrot_point(c, max_iter=100):
 
 @profile
 def compute_mandelbrot_grid(xmin, xmax, ymin, ymax, width, height, max_iter):
+    """Compute Mandelbrot set using naive loops."""
 
     # defining the region 
     x = np.linspace(xmin, xmax, width)
@@ -107,7 +110,8 @@ def compute_mandelbrot_grid(xmin, xmax, ymin, ymax, width, height, max_iter):
 #-------------------------
 
 #Lesson2 milestone 2: vectorize 
-def compute_mandelbrot_vectorized(xmin, xmax, ymin, ymax, n, max_iter):
+def compute_mandelbrot_vectorized(xmin: float, xmax: float, ymin: float, ymax: float, n: int, max_iter: int) -> np.ndarray:
+    """Compute Mandelbrot set using NumPy."""
     C = create_complex_grid(xmin, xmax, ymin, ymax, n)
 
     Z = np.zeros_like(C)              
@@ -133,7 +137,9 @@ def compute_mandelbrot_vectorized(xmin, xmax, ymin, ymax, n, max_iter):
 #replace with milestone 4 sames as float64
 # full compiled
 @njit
-def compute_mandelbrot_numba(xmin, xmax, ymin, ymax, width, height, max_iter=100):
+def compute_mandelbrot_numba( xmin: float, xmax: float,  ymin: float,  ymax: float, width: int,  height: int,  max_iter: int = 100,
+) -> np.ndarray:
+    """Compute Mandelbrot set using Numba."""
 
     x = np.linspace(xmin, xmax, width)
     y = np.linspace(ymin, ymax, height)
@@ -160,7 +166,9 @@ def compute_mandelbrot_numba(xmin, xmax, ymin, ymax, width, height, max_iter=100
 #lesson3 milestone 4: floating point precision
 
 @njit
-def compute_mandelbrot_numba_f32(xmin, xmax, ymin, ymax, width, height, max_iter=100):
+def compute_mandelbrot_numba_f32( xmin: float, xmax: float, ymin: float, ymax: float, width: int, height: int, max_iter: int = 100,
+) -> np.ndarray:
+    """Compute Mandelbrot set with float32 (Numba)."""
     x = np.linspace(xmin, xmax, width).astype(np.float32)
     y = np.linspace(ymin, ymax, height).astype(np.float32)
     result = np.zeros((height, width), dtype=np.int32)
@@ -185,7 +193,8 @@ def compute_mandelbrot_numba_f32(xmin, xmax, ymin, ymax, width, height, max_iter
 
 
 @njit
-def compute_mandelbrot_numba_f64(xmin, xmax, ymin, ymax, width, height, max_iter=100):
+def compute_mandelbrot_numba_f64(xmin: float, xmax: float, ymin: float, ymax: float, width: int, height: int, max_iter: int = 100) -> np.ndarray:
+    """Compute Mandelbrot set with float64 (Numba)."""
     x = np.linspace(xmin, xmax, width).astype(np.float64)
     y = np.linspace(ymin, ymax, height).astype(np.float64)
     result = np.zeros((height, width), dtype=np.int32)

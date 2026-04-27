@@ -15,6 +15,7 @@ def mandelbrot_dask(
     N, x_min, x_max, y_min, y_max,
     max_iter=100, n_chunks=32
 ):
+    """Compute Mandelbrot set using Dask."""
     chunk_size = max(1, N // n_chunks)
 
     tasks = []

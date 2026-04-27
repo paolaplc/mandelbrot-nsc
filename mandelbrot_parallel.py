@@ -14,6 +14,7 @@ from multiprocessing import Pool
 #lesson4 milestone 1
 @njit(cache=True)
 def mandelbrot_pixel(c_real, c_imag, max_iter):
+    """Compute escape iteration for one pixel."""
     z_real = 0.0
     z_imag = 0.0
 
@@ -32,6 +33,7 @@ def mandelbrot_pixel(c_real, c_imag, max_iter):
 
 @njit(cache=True)
 def mandelbrot_chunk(row_start, row_end, N, x_min, x_max, y_min, y_max, max_iter):
+    """Compute a chunk of Mandelbrot rows."""
     out = np.empty((row_end - row_start, N), dtype=np.int32)
 
     dx = (x_max - x_min) / (N - 1)
@@ -48,11 +50,13 @@ def mandelbrot_chunk(row_start, row_end, N, x_min, x_max, y_min, y_max, max_iter
 
 
 def mandelbrot_serial(N, x_min, x_max, y_min, y_max, max_iter=100):
+    """Compute Mandelbrot set serially."""
     return mandelbrot_chunk(0, N, N, x_min, x_max, y_min, y_max, max_iter)
 
 
 # lesson 4 milestone 2
 def _worker(args):
+    """Worker wrapper for multiprocessing."""
     return mandelbrot_chunk(*args)
 
 
@@ -61,6 +65,7 @@ def mandelbrot_parallel(
     N, x_min, x_max, y_min, y_max,
     max_iter=100, n_workers=4, n_chunks=None, pool=None
 ):
+    """Compute Mandelbrot set using multiprocessing."""
     if n_chunks is None:
         n_chunks = n_workers
 

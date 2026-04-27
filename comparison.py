@@ -8,7 +8,8 @@ import pyopencl as cl
 
 from mandelbrot import (
     compute_mandelbrot_grid,
-    compute_mandelbrot_numba,
+    compute_mandelbrot_numba_f32,
+    compute_mandelbrot_numba_f64,
     compute_mandelbrot_vectorized,
 )
 from mandelbrot_dask import mandelbrot_dask
@@ -113,10 +114,19 @@ if __name__ == "__main__":
         N, max_iter,
     )
 
-    # Numba
-    _ = compute_mandelbrot_numba(x_min, x_max, y_min, y_max, 64, 64, max_iter)
-    t_numba, result_numba = benchmark(
-        compute_mandelbrot_numba,
+ 
+    # Numba f32 / f64
+    _ = compute_mandelbrot_numba_f32(x_min, x_max, y_min, y_max, 64, 64, max_iter)
+    _ = compute_mandelbrot_numba_f64(x_min, x_max, y_min, y_max, 64, 64, max_iter)
+
+    t_numba_f32, result_numba_f32 = benchmark(
+        compute_mandelbrot_numba_f32,
+        x_min, x_max, y_min, y_max,
+        N, N, max_iter,
+    )
+
+    t_numba_f64, result_numba_f64 = benchmark(
+        compute_mandelbrot_numba_f64,
         x_min, x_max, y_min, y_max,
         N, N, max_iter,
     )
@@ -158,37 +168,38 @@ if __name__ == "__main__":
         N, x_min, x_max, y_min, y_max, max_iter,
     )
 
-    print("Implementation        Time (s)   Speedup")
-    print("------------------------------------------")
-    print(f"Naive Python          {t_naive:.4f}     1.00x")
-    print(f"NumPy vectorized      {t_numpy:.4f}     {t_naive / t_numpy:.2f}x")
-    print(f"Numba (@njit)         {t_numba:.4f}     {t_naive / t_numba:.2f}x")
-    print(f"Multiprocessing       {t_parallel:.4f}     {t_naive / t_parallel:.2f}x")
-    print(f"Dask local            {t_dask:.4f}     {t_naive / t_dask:.2f}x")
-    print(f"GPU OpenCL f32        {t_gpu:.4f}     {t_naive / t_gpu:.2f}x")
+    baseline = t_numba_f32
 
-    print("\nParallel vs Numba:")
-    print(f"Multiprocessing vs Numba: {t_numba / t_parallel:.2f}x")
-    print(f"Dask vs Numba:            {t_numba / t_dask:.2f}x")
-    print(f"GPU vs Numba:             {t_numba / t_gpu:.2f}x")
+    print("Implementation        Time (s)   Speedup vs Numba f32")
+    print("------------------------------------------------------")
+    print(f"Naive Python          {t_naive:.4f}     {baseline / t_naive:.2f}x")
+    print(f"NumPy vectorized      {t_numpy:.4f}     {baseline / t_numpy:.2f}x")
+    print(f"Numba f32             {t_numba_f32:.4f}     1.00x")
+    print(f"Numba f64             {t_numba_f64:.4f}     {baseline / t_numba_f64:.2f}x")
+    print(f"Multiprocessing       {t_parallel:.4f}     {baseline / t_parallel:.2f}x")
+    print(f"Dask local            {t_dask:.4f}     {baseline / t_dask:.2f}x")
+    print(f"GPU OpenCL f32        {t_gpu:.4f}     {baseline / t_gpu:.2f}x")
+
+    print("\nParallel vs Numba f32:")
+    print(f"Multiprocessing vs Numba f32: {t_numba_f32 / t_parallel:.2f}x")
+    print(f"Dask vs Numba f32:            {t_numba_f32 / t_dask:.2f}x")
+    print(f"GPU vs Numba f32:             {t_numba_f32 / t_gpu:.2f}x")
 
     print("\nValidation checks:")
-    print("NumPy matches naive:", np.allclose(result_naive, result_numpy))
-    print("Numba matches naive:", np.allclose(result_naive, result_numba))
-    print("Parallel matches naive:", np.allclose(result_naive, result_parallel))
-    print("Dask matches naive:", np.allclose(result_naive, result_dask))
+    print("NumPy matches naive:", np.array_equal(result_naive, result_numpy))
+    print("Numba f32 matches naive:", np.array_equal(result_naive, result_numba_f32))
+    print("Numba f64 matches naive:", np.array_equal(result_naive, result_numba_f64))
+    print("Parallel matches naive:", np.array_equal(result_naive, result_parallel))
+    print("Dask matches naive:", np.array_equal(result_naive, result_dask))
+
     gpu_diff = np.abs(result_naive - result_gpu)
     print("GPU max difference:", gpu_diff.max())
     print("GPU different pixels:", (gpu_diff > 0).sum())
-    print("GPU matches naive:", np.array_equal(result_naive, result_gpu))
 
     names = [
-        "Naive", "NumPy", "Numba", "Multiprocessing", "Dask local", "GPU f32",
-    ]
+    "Naive", "NumPy", "Numba f32",  "Numba f64", "Multiprocessing", "Dask local",  "GPU f32", ]
 
-    times = [ t_naive, t_numpy, t_numba, t_parallel, t_dask, t_gpu,
-    ]
-
+    times = [ t_naive,  t_numpy, t_numba_f32, t_numba_f64,  t_parallel, t_dask,t_gpu,]
     plt.figure(figsize=(9, 5))
     plt.bar(names, times)
     plt.yscale("log")
